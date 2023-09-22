@@ -4,7 +4,6 @@ const Users  =  require('../models/Users')
 
 const protect = asynHandler(async(req,res, next) =>{
     let token;
-    console.log(`in the auth middleware ${req.user}`)
 
     token = req.cookies.jwt;
     if(token){
