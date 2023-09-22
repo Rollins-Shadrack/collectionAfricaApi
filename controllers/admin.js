@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs')
 const imageDownloader = require('image-downloader')
 const Course = require('../models/Course')
+const Quizzes = require('../models/Quizes')
 
 let Upload = asyncHandler(async(req,res) =>{
     const uploadedFiles = [];
@@ -30,20 +31,18 @@ const uploadByLink = asyncHandler(async(req,res) =>{
 })
 
 const NewCourse = asyncHandler(async(req,res) =>{
-    console.log(req.body)
-    console.log(req.body.modules[0].sessions)
-    // try{
-    //     await Course.create(req.body)
-    //     res.status(201).json({message:'Course Created Successfully'})
-    // }catch(err){
-    //     res.status(500)
-    // throw new Error ('Server Error')
-    // }
+    try{
+        await Course.create(req.body)
+        res.status(201).json({message:'Course Created Successfully'})
+    }catch(err){
+        res.status(500)
+    throw new Error ('Server Error')
+    }
 })
 
 const getCourses = asyncHandler(async(req,res) =>{
     try{
-        const courses = await Course.find().sort({createdAt: -1})
+        const courses = await Course.find().sort({createdAt: -1}).populate('createdBy', '-password').populate('comment.issuedBy', '-password').populate('comment.replies.issuedBy', '-password');
         res.status(200).json(courses)
 
         !courses ? res.status(404).json({message:"No Course Found"}) : null
@@ -79,11 +78,71 @@ const UpdateCourse = asyncHandler(async(req,res) =>{
         if(course){
             course.set(req.body)
             await course.save();
-            res.status(200).json({ message: 'Course Successfully Updated' });
+            res.status(200).json({ message: 'Success' });
         }
     }catch(err){
-        console.error('Error updating service:', error);
+        console.error('Error updating service:', err);
         res.status(500).json({ message: 'An error occurred while updating the course' });
+    }
+})
+
+const deleteCourse = asyncHandler(async(req,res) =>{
+    let course =  await Course.deleteOne({_id: req.body.id})
+   if(course){
+    res.status(200).json({message:'Course Removed'})
+   }
+   throw new Error('Unable to Remove Course')
+})
+
+const setQuiz = asyncHandler(async (req, res) => {
+    try {
+      await Quizzes.create(req.body)
+      res.status(201).json({ message: 'Quiz Successfully Saved'});
+    } catch (err) {
+      res.status(500);
+      console.error(err);
+      throw new Error('Server error');
+    }
+  });
+  
+
+const getQuiz = asyncHandler(async(req,res) =>{
+    try{
+        const quizes = await Quizzes.find().sort({createdAt: -1}).populate('createdBy', '-password');
+        res.status(200).json(quizes)
+
+        !quizes ? res.status(404).json({message:"No Course Found"}) : null
+
+    }catch(err){
+        res.status(500)
+    throw new Error ('Server Error')
+    }
+})
+
+const saveCommentReply = asyncHandler(async(req,res) =>{
+    try{
+        const course = await Course.findById(req.body.courseId)
+
+        if (!course) {
+            throw new Error('Course not found');
+          }
+
+          const comment = course.comment.id(req.body.commentId)
+
+          if (!comment) {
+            throw new Error('Comment not found');
+          }
+
+          comment.replies.push(req.body);
+
+          await course.save();
+
+          res.status(201).json({message:'Comment Sent!'})
+
+    }catch(err){
+        res.status(500)
+        console.log(err)
+        throw new Error ('Server Error')
     }
 })
 module.exports ={
@@ -92,5 +151,9 @@ module.exports ={
     NewCourse,
     getCourses,
     singleCourse,
-    UpdateCourse
+    UpdateCourse,
+    deleteCourse,
+    setQuiz,
+    getQuiz,
+    saveCommentReply
 }
