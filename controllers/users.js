@@ -7,6 +7,7 @@ const fs = require('fs')
 const authUser = asyncHandler(async(req,res) =>{
     const {email, password, isAdmin} = req.body
 
+
     const user = await Users.findOne({email})
 
     if(user &&(await user.matchPasswords(password))){
@@ -14,9 +15,10 @@ const authUser = asyncHandler(async(req,res) =>{
             res.status(401)
            throw new Error ('Account not verified')
         }
-        if (isAdmin === true && user.role !== 'admin'){
+        let isAuthenticated = isAdmin === true && user.role === 'admin' || isAdmin === false && user.role === 'student'
+        if (!isAuthenticated){
             res.status(401)
-           throw new Error ('You are not an Admin')
+           throw new Error ('Invalid Credentials')
         }
         generateToken(res, user._id)
         res.status(201).json({
@@ -182,7 +184,7 @@ const Upload = asyncHandler(async (req, res) => {
   });  
 
 const getUserprofile = asyncHandler(async(req,res) =>{
-    const user = await Users.findById(req.user._id).select('-password');
+    const user = await Users.findById(req.user._id).select('-password').populate('performance.courseId');
     if(user){
         res.status(200).json(user)
     }else{
@@ -191,6 +193,53 @@ const getUserprofile = asyncHandler(async(req,res) =>{
     }
     
 })
+
+const getUsers = asyncHandler(async(req,res) =>{
+  const users = await Users.find().select('-password');
+  if(users){
+      res.status(200).json(users)
+  }else{
+      res.status(404);
+    throw new Error('Users not Found')
+  }
+  
+})
+
+const makePayment = asyncHandler(async(req,res) =>{
+  const {courseId, amount, studentId, mobile} = req.body
+
+  const user = await Users.findById(studentId)
+  if(!user){
+    res.status(404);
+    throw new Error('User not Found')
+  }else{
+    user.enrolledCourses.push(courseId)
+    user.save()
+    res.status(201).json({message:"Successfully Enrolled"})
+  }
+})
+
+const deleteUser = asyncHandler(async(req,res) =>{
+  let user =  await Users.deleteOne({_id: req.body.id})
+   if(user){
+    res.status(200).json({message:'User Removed'})
+   }
+   throw new Error('Unable to Remove User')
+})
+
+const StudentPerformance = asyncHandler(async(req,res) =>{
+  const {studentId} = req.body
+  const student = await Users.findById(studentId)
+  if(student){
+    student.performance.push(req.body)
+    student.save()
+    res.status(200)
+
+  }else{
+    res.status(404)
+    throw new Error('Unable to find Student')
+  }
+})
 module.exports ={
     authUser,
     registerUser,
@@ -198,5 +247,9 @@ module.exports ={
     logoutUser,
     Upload,
     UpdateUserprofile,
-    getUserprofile
+    getUserprofile,
+    makePayment,
+    getUsers,
+    deleteUser,
+    StudentPerformance
 }
