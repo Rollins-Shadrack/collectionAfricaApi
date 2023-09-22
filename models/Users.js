@@ -33,6 +33,25 @@ const usersSchema = new Schema({
         type:String,
         required:true
     },
+    enrolledCourses:[{
+        type: mongoose.SchemaTypes.ObjectId,
+        ref:'Course'
+    }],
+    performance:[{
+        percentagePerformance:{
+            type: Number
+        },
+        courseId:{
+            type: mongoose.SchemaTypes.ObjectId,
+            ref:'Quizzes'
+        },
+        score:{
+            type:Number
+        },
+        totalQuestions:{
+            type: Number
+        }
+    }]
 }, {timestamps: true})
 
 usersSchema.pre('save', async function (next){
