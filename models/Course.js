@@ -4,7 +4,9 @@ const Schema = mongoose.Schema;
 
 const courseSchema = new Schema({
     createdBy:{
-        type: Object
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Users',
+        required: true,
     },
     title: {
         type: String,
@@ -50,22 +52,38 @@ const courseSchema = new Schema({
         type: String,
         required: true
     },
-    modules: [{
-        moduleTitle: {
-            type: String,
-            required: true
+    comment: [{
+        message: {
+          type: String,
+          required: true,
         },
-        sessions: [{
-            sessionTitle: {
+        issuedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Users',
+          required: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+        replies: [
+            {
+              message: {
                 type: String,
-                required: true
+                required: true,
+              },
+              issuedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Users',
+                required: true,
+              },
+              createdAt: {
+                type: Date,
+                default: Date.now,
+              },
             },
-            notes: {
-                type: String,
-                required: true
-            },
-        }],
-    }]
+          ],
+      },],
 }, { timestamps: true });
 
 const Course = mongoose.model('Course', courseSchema);
