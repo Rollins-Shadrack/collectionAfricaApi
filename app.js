@@ -21,7 +21,7 @@ app.use(bodyParser.urlencoded({extended:false}))
 app.use(cookieParser());
 app.use(
     cors({
-        origin: 'http://localhost:3000', 
+        origin: 'https://collectionafrica.netlify.app', 
         credentials: true
     })
 )
