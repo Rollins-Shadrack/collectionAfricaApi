@@ -100,7 +100,7 @@ const sendEmail = async(user) =>{
       
       <p>Thank you for joining Collection Africa's Online Course! Your commitment to learning is commendable. To begin your journey, kindly verify your account by clicking the link below. This ensures full access to our enriching content and resources.</p>
       
-      <p><a href="https://collection-africa.netlify.app/verify/${user._id}">Verify Your Account</a></p>
+      <p><a href="https://collectionafrica.netlify.app/verify/${user._id}">Verify Your Account</a></p>
       
       <p>Embrace a world of knowledge, connect with peers, and elevate your skills. For any queries, reach out to <a href="mailto:rshadrackochieng@gmail.com">support@email.com</a>. We're excited to witness your progress and contributions.</p>
       
