@@ -22,7 +22,7 @@ app.use(cookieParser());
 app.use(
     cors({
         origin: ['http://localhost:3000', 'https://collectionafrica.netlify.app'],
-        methods: ['GET', 'POST'],
+        methods: ['GET', 'POST','PUT'],
         credentials: true
     })
 )
