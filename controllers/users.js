@@ -141,7 +141,7 @@ const Upload = asyncHandler(async (req, res) => {
         const ext = parts[parts.length - 1];
         const newPath = path + '.' + ext;
         fs.renameSync(path, newPath);
-        uploadedFiles.push(newPath);
+        uploadedFiles.push(newPath.replace(/uploads\\/g, ''));
       }
     } else {
       // Handle the case where no files are uploaded
