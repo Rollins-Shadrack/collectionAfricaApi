@@ -6,9 +6,12 @@ const fs = require('fs')
 
 const authUser = asyncHandler(async(req,res) =>{
     const {email, password, isAdmin} = req.body
+    console.log(req.body)
 
 
     const user = await Users.findOne({email})
+
+    console.log(user)
 
     if(user &&(await user.matchPasswords(password))){
         if(user.role === 'student' && user.verify === false){
@@ -100,7 +103,7 @@ const sendEmail = async(user) =>{
       
       <p>Thank you for joining Collection Africa's Online Course! Your commitment to learning is commendable. To begin your journey, kindly verify your account by clicking the link below. This ensures full access to our enriching content and resources.</p>
       
-      <p><a href="https://collectionafrica.netlify.app/verify/${user._id}">Verify Your Account</a></p>
+      <p><a href="https://collection-africa.netlify.app/verify/${user._id}">Verify Your Account</a></p>
       
       <p>Embrace a world of knowledge, connect with peers, and elevate your skills. For any queries, reach out to <a href="mailto:rshadrackochieng@gmail.com">support@email.com</a>. We're excited to witness your progress and contributions.</p>
       
@@ -228,17 +231,24 @@ const deleteUser = asyncHandler(async(req,res) =>{
 })
 
 const StudentPerformance = asyncHandler(async(req,res) =>{
-  const {studentId} = req.body
+  const {studentId, courseId} = req.body
+  
   const student = await Users.findById(studentId)
-  if(student){
-    student.performance.push(req.body)
-    student.save()
-    res.status(200)
-
-  }else{
-    res.status(404)
-    throw new Error('Unable to find Student')
+  if (!student) {
+    res.status(404);
+    throw new Error('Unable to find Student');
   }
+
+  const existingPerformance = student.performance.some(performance => performance.courseId.toString() === courseId.toString())
+
+  if (existingPerformance) {
+    res.status(400);
+    throw new Error('You have already done this Quiz');
+  }
+
+  student.performance.push(req.body)
+  student.save()
+  res.status(200).json({message:`You scored ${req.body.score} out of ${req.body.totalQuestions}`})
 })
 module.exports ={
     authUser,
